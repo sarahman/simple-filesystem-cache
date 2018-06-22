@@ -25,20 +25,35 @@ class FileSystemCache implements CacheInterface
      * cache path
      * @var string
      */
-    private $temporaryDirectory;
+    private $cacheDirectory;
 
     /**
      * Create a cache instance
+     * @param string $cacheDirectory
+     * @throws \Exception
      */
-    public function __construct()
+    public function __construct($cacheDirectory = '')
     {
-        $tempDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . __CLASS__ . DIRECTORY_SEPARATOR;
+        if (empty($cacheDirectory)) {
+            $cacheDirectory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . __CLASS__;
+        } else {
+            if (preg_match('#^\./#', $cacheDirectory)) {
+                $cacheDirectory = preg_replace('#^\./#', '', $cacheDirectory);
+                $cacheDirectory = getcwd() . DIRECTORY_SEPARATOR . ltrim($cacheDirectory, DIRECTORY_SEPARATOR);
+            }
 
-        if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0700);
+            if (!is_dir($cacheDirectory)) {
+                $uMask = umask(0);
+                @mkdir($cacheDirectory, 0755, true);
+                umask($uMask);
+            }
+
+            if (!is_dir($cacheDirectory) || !is_readable($cacheDirectory)) {
+                throw new \Exception('The root path ' . $cacheDirectory . ' is not readable.');
+            }
         }
 
-        $this->temporaryDirectory = $tempDir;
+        $this->cacheDirectory = rtrim($cacheDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -55,7 +70,7 @@ class FileSystemCache implements CacheInterface
             return false;
 
         if ($data = json_encode(array('lifetime' => time() + $lifetime, 'data' => $value))) {
-            if (file_put_contents($this->temporaryDirectory . $key, $data) !== false) {
+            if (file_put_contents($this->cacheDirectory . $key, $data) !== false) {
                 $this->cache[$key] = $data;
                 return true;
             }
@@ -92,7 +107,7 @@ class FileSystemCache implements CacheInterface
         if (!$this->isKey($key))
             return false;
 
-        $file = $this->temporaryDirectory . $key;
+        $file = $this->cacheDirectory . $key;
 
         if (isset($this->cache[$key])) {
             $fileData = $this->cache[$key];
@@ -131,7 +146,7 @@ class FileSystemCache implements CacheInterface
         if (!$this->isKey($key))
             return false;
 
-        return $this->deleteFile($this->temporaryDirectory . $key);
+        return $this->deleteFile($this->cacheDirectory . $key);
     }
 
     /**
@@ -238,7 +253,7 @@ class FileSystemCache implements CacheInterface
     {
         $return = true;
 
-        foreach (glob($this->temporaryDirectory . $pattern, GLOB_NOSORT | GLOB_BRACE) as $cacheFile) {
+        foreach (glob($this->cacheDirectory . $pattern, GLOB_NOSORT | GLOB_BRACE) as $cacheFile) {
             if (!$this->deleteFile($cacheFile)) {
                 $return = false;
             }
@@ -251,10 +266,15 @@ class FileSystemCache implements CacheInterface
      * check if $key is valid key name
      * @param string $key The key to validate
      * @return boolean Returns TRUE if valid key or FALSE otherwise
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     private function isKey($key)
     {
-        return !preg_match('/[^a-z_\-0-9]/i', $key);
+        try {
+            return !preg_match('/[^a-z_\-0-9]/i', $key);
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 
     /**
