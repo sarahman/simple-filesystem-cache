@@ -289,7 +289,7 @@ class FileSystemCache implements CacheInterface
         clearstatcache(true, $cacheFile);
 
         if (file_exists($cacheFile)) {
-            if (!@unlink($cacheFile)) {
+            if (is_file($cacheFile) && !@unlink($cacheFile)) {
                 return (file_put_contents($cacheFile, '') !== false);
             }
 
