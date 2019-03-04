@@ -4,7 +4,7 @@ PHP Cache library built by PSR-16 simple cache interface
 You can find implementations of the specification by looking for packages providing the psr/simple-cache-implementation virtual package.
 
 #### Installation
-- Run this command: `composer require sarahman/simple-cache`
+- Run this command: `composer require sarahman/simple-filesystem-cache`
 
 #### Usages
 - Create a file named `test.php` in your root directory and add these following codes: 
