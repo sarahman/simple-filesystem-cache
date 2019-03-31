@@ -36,21 +36,19 @@ class FileSystemCache implements CacheInterface
     {
         if (empty($cacheDirectory)) {
             $cacheDirectory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . __CLASS__;
-        } else {
-            if (preg_match('#^\./#', $cacheDirectory)) {
-                $cacheDirectory = preg_replace('#^\./#', '', $cacheDirectory);
-                $cacheDirectory = getcwd() . DIRECTORY_SEPARATOR . ltrim($cacheDirectory, DIRECTORY_SEPARATOR);
-            }
+        } elseif (preg_match('#^\./#', $cacheDirectory)) {
+            $cacheDirectory = preg_replace('#^\./#', '', $cacheDirectory);
+            $cacheDirectory = getcwd() . DIRECTORY_SEPARATOR . ltrim($cacheDirectory, DIRECTORY_SEPARATOR);
+        }
 
-            if (!is_dir($cacheDirectory)) {
-                $uMask = umask(0);
-                @mkdir($cacheDirectory, 0755, true);
-                umask($uMask);
-            }
+        if (!is_dir($cacheDirectory)) {
+            $uMask = umask(0);
+            @mkdir($cacheDirectory, 0755, true);
+            umask($uMask);
+        }
 
-            if (!is_dir($cacheDirectory) || !is_readable($cacheDirectory)) {
-                throw new \Exception('The root path ' . $cacheDirectory . ' is not readable.');
-            }
+        if (!is_dir($cacheDirectory) || !is_readable($cacheDirectory)) {
+            throw new \Exception('The root path ' . $cacheDirectory . ' is not readable.');
         }
 
         $this->cacheDirectory = rtrim($cacheDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
