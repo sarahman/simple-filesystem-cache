@@ -99,25 +99,15 @@ class FileSystemCacheTest extends \PHPUnit\Framework\TestCase
      * @throws \Psr\SimpleCache\InvalidArgumentException
      * @throws \Exception
      */
-    public function it_checks_data_update_in_cache()
+    public function it_checks_data_removal_when_its_lifetime_of_caching_passed()
     {
         $cache = new FileSystemCache();
 
         // Set Cache key.
-        $cache->set('custom_key', [
-            'sample' => 'data',
-            'another' => 'data'
-        ]);
+        $cache->set('some_data', 'to be removed', 5);
+        $this->assertTrue($cache->has('some_data'));
 
-        $this->assertTrue($cache->has('custom_key'));
-
-        // Get Cached key data.
-        $this->assertArrayHasKey('sample', $cache->get('custom_key'));
-        $this->assertArrayHasKey('another', $cache->get('custom_key'));
-
-        // Update Cache key data.
-        $cache->set('custom_key', 'new data');
-        $this->assertTrue($cache->has('custom_key'));
-        $this->assertEquals('new data', $cache->get('custom_key'));
+        sleep(6);
+        $this->assertFalse($cache->has('some_data'));
     }
 }
