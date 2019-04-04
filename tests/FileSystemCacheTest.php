@@ -110,4 +110,23 @@ class FileSystemCacheTest extends \PHPUnit\Framework\TestCase
         sleep(6);
         $this->assertFalse($cache->has('some_data'));
     }
+
+    /**
+     * @test
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \Exception
+     */
+    public function it_checks_cached_data_lifetime_incrementing()
+    {
+        $cache = new FileSystemCache();
+
+        $cache->set('some_data', 'to be touched', 5);
+        $this->assertTrue($cache->has('some_data'));
+
+        $cache->touch('some_data', 5);
+        $this->assertTrue($cache->has('some_data'));
+
+        sleep(6);
+        $this->assertFalse($cache->touch('some_data', 10));
+    }
 }
