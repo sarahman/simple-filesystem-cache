@@ -16,8 +16,8 @@ use Psr\SimpleCache\CacheInterface;
 class FileSystemCache implements CacheInterface
 {
     /**
-     * The instances cache
-     * @static var array
+     * runtime cached data storage
+     * @var array
      */
     private $cache = null;
 
@@ -145,6 +145,16 @@ class FileSystemCache implements CacheInterface
             return false;
 
         return $this->deleteFile($this->cacheDirectory . $key);
+    }
+
+    /**
+     * Fetched all the cached data.
+     *
+     * @return array
+     */
+    public function all()
+    {
+        return $this->cache;
     }
 
     /**
