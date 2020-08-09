@@ -2,7 +2,7 @@
     "name": "sarahman/simple-filesystem-cache",
     "description": "Simple file system cache library for PHP built on top of PSR-16.",
     "type": "library",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "license": "MIT",
     "authors": [
         {
@@ -15,14 +15,14 @@
         "ext-json": "*",
         "psr/simple-cache": "*"
     },
-    
+
     "require-dev": {
         "phpunit/phpunit": "^4.8"
     },
 
     "autoload": {
         "psr-4": {
-            "Sarahman\\SimpleCache\\": "src"
+            "Sarahman\\SimpleCache\\": "src/"
         }
     },
 
